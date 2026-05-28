@@ -1,0 +1,71 @@
+@mixin mq($point) {
+  @if $point == fluid {
+    @media (min-width: 1921px) {
+      @content;
+    }
+  } @else if $point == dt {
+    @media (max-width: 1920px) {
+      @content;
+    }
+  } @else if $point == lap {
+    @media (max-width: 1660px) {
+      @content;
+    }
+  } @else if $point == sdt {
+    @media (max-width: 1300px) {
+      @content;
+    }
+  } @else if $point == menu {
+    @media (max-width: 1274px) {
+      @content;
+    }
+  } @else if $point == tb {
+    @media (max-width: 1100px) {
+      @content;
+    }
+  } @else if $point == product {
+    @media (max-width: 1000px) {
+      @content;
+    }
+  } @else if $point == pdpbar {
+    @media (max-width: 880px) {
+      @content;
+    }
+  } @else if $point == stb {
+    @media (max-width: 800px) {
+      @content;
+    }
+  } @else if $point == mb {
+    @media (max-width: 700px) {
+      @content;
+    }
+  } @else if $point == s {
+    @media (max-width: 480px) {
+      @content;
+    }
+  } @else if $point == xs {
+    @media (max-width: 380px) {
+      @content;
+    }
+  } @else if $point == short {
+    @media (max-height: 760px) {
+      @content;
+    }
+  } @else if $point == menuheight1 {
+    @media (max-height: 836px) and (min-width: 1101px) {
+      @content;
+    }
+  } @else if $point == menuheight2 {
+    @media (max-height: 734px) and (min-width: 1101px) {
+      @content;
+    }
+  } @else if $point == portrait {
+    @media (orientation: portrait) {
+      @content;
+    }
+  } @else if $point == landscape {
+    @media (orientation: landscape) {
+      @content;
+    }
+  }
+}

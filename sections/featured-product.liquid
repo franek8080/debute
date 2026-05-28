@@ -1,0 +1,178 @@
+{{ 'section-featured-product.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign featured_product = section.settings.product
+
+  if featured_product == blank
+    assign featured_product = collections.all.products.first
+  endif
+
+  assign featured_variant = featured_product.selected_or_first_available_variant
+  assign featured_price = featured_variant.price | money_without_trailing_zeros
+  if settings.currency_code_enabled
+    assign featured_price = featured_variant.price | money_with_currency
+  endif
+-%}
+
+{%- if featured_product != blank -%}
+  <section
+    id="FeaturedProduct-{{ section.id }}"
+    class="featured-product section"
+  >
+    <div class="featured-product__inner">
+
+
+      {%- if featured_product.featured_media -%}
+        <div class="featured-product__media">
+          <a
+            href="{{ featured_product.url }}"
+            class="featured-product__media-link"
+            tabindex="-1"
+            aria-hidden="true"
+          >
+            <img
+              srcset="
+                {%- if featured_product.featured_media.width >= 375 -%}{{ featured_product.featured_media | image_url: width: 375 }} 375w,{%- endif -%}
+                {%- if featured_product.featured_media.width >= 550 -%}{{ featured_product.featured_media | image_url: width: 550 }} 550w,{%- endif -%}
+                {%- if featured_product.featured_media.width >= 750 -%}{{ featured_product.featured_media | image_url: width: 750 }} 750w,{%- endif -%}
+                {%- if featured_product.featured_media.width >= 1100 -%}{{ featured_product.featured_media | image_url: width: 1100 }} 1100w,{%- endif -%}
+                {%- if featured_product.featured_media.width >= 1500 -%}{{ featured_product.featured_media | image_url: width: 1500 }} 1500w,{%- endif -%}
+                {{ featured_product.featured_media | image_url }} {{ featured_product.featured_media.width }}w
+              "
+              src="{{ featured_product.featured_media | image_url: width: 750 }}"
+              sizes="(min-width: 701px) 50vw, 100vw"
+              alt="{{ featured_product.featured_media.alt | escape }}"
+              class="featured-product__image"
+              width="{{ featured_product.featured_media.width }}"
+              height="{{ featured_product.featured_media.height }}"
+              loading="lazy"
+            >
+          </a>
+        </div>
+      {%- endif -%}
+      
+      <div class="featured-product__content">
+        {%- if section.settings.badge != blank -%}
+          <p class="featured-product__badge">{{ section.settings.badge | escape }}</p>
+        {%- endif -%}
+
+        <h2 class="featured-product__title" id="FeaturedProductTitle-{{ section.id }}">
+          <a href="{{ featured_product.url }}" class="full-unstyled-link">
+            {{ featured_product.title | escape }}
+          </a>
+        </h2>
+
+        <p class="featured-product__meta">
+          <span class="featured-product__price">{{ featured_price }}</span>
+          {%- if featured_variant.weight > 0 -%}
+            <span class="featured-product__meta-separator" aria-hidden="true"> | </span>
+            <span class="featured-product__volume">
+              {{ featured_variant.weight | weight_with_unit }}
+            </span>
+          {%- endif -%}
+        </p>
+
+        {%- if featured_product.description != blank -%}
+          <div class="featured-product__description">
+            {%- if section.settings.description_label != blank -%}
+              <p class="featured-product__description-label">
+                {{ section.settings.description_label | escape }}
+              </p>
+            {%- endif -%}
+            <p class="featured-product__description-text">
+              {{ featured_product.description | strip_html }}
+            </p>
+          </div>
+        {%- endif -%}
+
+        <div class="featured-product__actions">
+          <a href="{{ featured_product.url }}" class="featured-product__link">
+            <span>{{ 'sections.featured_product.view_product' | t }}</span>
+            {{- 'icon-arrow.svg' | inline_asset_content -}}
+          </a>
+
+          {%- assign product_form_id = 'featured-product-' | append: section.id -%}
+          <product-form class="featured-product__atc" data-section-id="{{ section.id }}">
+            {%- form 'product',
+              featured_product,
+              id: product_form_id,
+              class: 'form',
+              novalidate: 'novalidate',
+              data-type: 'add-to-cart-form'
+            -%}
+              <input
+                type="hidden"
+                name="id"
+                value="{{ featured_variant.id }}"
+                class="product-variant-id"
+                {% if featured_variant.available == false %}
+                  disabled
+                {% endif %}
+              >
+              <button
+                id="{{ product_form_id }}-submit"
+                type="submit"
+                name="add"
+                class="unstyled-button featured-product__atc-button"
+                aria-labelledby="{{ product_form_id }}-submit FeaturedProductTitle-{{ section.id }}"
+                aria-live="polite"
+                data-sold-out-message="true"
+                {% if featured_variant.available == false %}
+                  disabled
+                {% endif %}
+              >
+                <span class="visually-hidden">
+                  {%- if featured_variant.available -%}
+                    {{ 'products.product.add_to_cart' | t }}
+                  {%- else -%}
+                    {{ 'products.product.sold_out' | t }}
+                  {%- endif -%}
+                </span>
+                <span class="sold-out-message visually-hidden">
+                  {{ 'products.product.sold_out' | t }}
+                </span>
+                {{- 'icon-add-to-cart.svg' | inline_asset_content -}}
+                {%- render 'loading-spinner' -%}
+              </button>
+            {%- endform -%}
+          </product-form>
+        </div>
+      </div>
+    </div>
+  </section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.featured-product.name",
+  "tag": "section",
+  "class": "section featured-product",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "t:sections.featured-product.settings.product.label"
+    },
+    {
+      "type": "text",
+      "id": "badge",
+      "label": "t:sections.featured-product.settings.badge.label",
+      "default": "Produkt miesiąca!"
+    },
+    {
+      "type": "text",
+      "id": "description_label",
+      "label": "t:sections.featured-product.settings.description_label.label",
+      "default": "Opis produktu:"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.featured-product.presets.name"
+    }
+  ]
+}
+{% endschema %}

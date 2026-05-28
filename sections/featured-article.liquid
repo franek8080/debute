@@ -1,0 +1,28 @@
+{{ 'section-featured-article.css' | asset_url | stylesheet_tag }}
+
+{%- if featured_product != blank -%}
+featured-article.liquid
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.featured-article.name",
+  "tag": "section",
+  "class": "section featured-article",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "article",
+      "id": "article",
+      "label": "t:sections.featured-article.settings.article.label"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.featured-article.presets.name"
+    }
+  ]
+}
+{% endschema %}

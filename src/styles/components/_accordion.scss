@@ -1,0 +1,68 @@
+@use '../global/mq' as *;
+
+summary {
+  cursor: pointer;
+  list-style: none;
+  position: relative;
+  display: block;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+.accordion {
+
+  &:not(.destroyed) {
+    border-bottom: 1px solid var(--Red);
+  }
+
+  &.destroyed summary {
+    pointer-events: none;
+    .icon-arrow {
+      display: none;
+    }
+  }
+
+  &__summary {
+    display: flex;
+    justify-content: space-between;
+    min-height: 4.4rem;
+    align-items: center;
+    padding: .8rem 0;
+
+    .icon-arrow {
+
+    }
+
+  }
+
+  &__summary-title {
+
+  }
+
+  &__plus-bar {
+    transition: all .3s ease-out;
+    transform-origin: center;
+
+    .is-open &,
+    details[open] & {
+      transform: scaleX(0);
+      opacity: 0;
+    }
+    details[open].closing & {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+  }
+
+  &__question {
+    font-size: 2.4rem;
+    line-height: 1;
+  }
+
+  &__content {}
+
+  &__content-inner {}
+
+}

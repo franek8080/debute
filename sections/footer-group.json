@@ -1,0 +1,86 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "name": "t:sections.footer.name",
+  "type": "footer",
+  "sections": {
+    "footer": {
+      "type": "footer",
+      "settings": {},
+      "blocks": {
+        "produkty": {
+          "type": "link_list",
+          "settings": {
+            "heading": "Produkty",
+            "menu": "footer",
+            "position_column": 1
+          }
+        },
+        "okazje": {
+          "type": "link_list",
+          "settings": {
+            "heading": "Okazje",
+            "menu": "footer",
+            "position_column": 1
+          }
+        },
+        "dieta": {
+          "type": "link_list",
+          "settings": {
+            "heading": "Dieta",
+            "menu": "footer",
+            "position_column": 2
+          }
+        },
+        "1991": {
+          "type": "link_list",
+          "settings": {
+            "heading": "1991",
+            "menu": "main-menu",
+            "position_column": 3
+          }
+        },
+        "social_media": {
+          "type": "social_media",
+          "settings": {
+            "heading": "Social media",
+            "position_column": 3
+          }
+        },
+        "text_contact": {
+          "type": "text",
+          "settings": {
+            "heading": "Kontakt",
+            "subtext": "<p>1991 Market sp. z o. o.<br>ul. Nałęczowska 15/4<br>00-463 Warszawa</p><p>NIP: 532-36-37-276<br>REGON: 746638343</p>"
+          }
+        },
+        "text_store": {
+          "type": "text",
+          "settings": {
+            "heading": "Pop-up store BAKEN żoliborz",
+            "subtext": "<p>Jana Jeziorańskiego 1,<br>01-521 Warszawa</p><p>+48578304306</p>"
+          }
+        }
+      },
+      "block_order": [
+        "produkty",
+        "okazje",
+        "dieta",
+        "1991",
+        "social_media",
+        "text_contact",
+        "text_store"
+      ]
+    }
+  },
+  "order": [
+    "footer"
+  ]
+}

@@ -1,0 +1,41 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "settings": {
+      }
+    },
+    "featured_product": {
+      "type": "featured-product",
+      "settings": {
+        "product": "zen-candle"
+      }
+    },
+    "ticker": {
+      "type": "ticker",
+      "settings": {
+      }
+    },
+    "ticker2": {
+      "type": "ticker",
+      "settings": {
+      }
+    }
+    
+  },
+  "order": [
+    "hero",
+    "featured_product",
+    "ticker", 
+    "ticker2"
+  ]
+}

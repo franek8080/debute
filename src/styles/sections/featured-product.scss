@@ -1,0 +1,157 @@
+@use '../global/mq' as *;
+
+.featured-product {
+  background-color: #fdf9f0;
+
+  &__inner {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    border: 1px solid var(--Red);
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+    padding: 2.4rem var(--gutter) 2rem;
+    order: 1;
+  }
+
+  &__badge {
+    font-family: Broadsheet, serif;
+    font-size: 2.4rem;
+    line-height: 1;
+    letter-spacing: 0.02em;
+  }
+
+  &__title {
+    font-family: Broadsheet, serif;
+    font-size: 3.2rem;
+    font-weight: 400;
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  &__meta {
+    font-family: 'Akkurat LL', sans-serif;
+    font-size: 1.8rem;
+    line-height: 1.2;
+    letter-spacing: 0.08rem;
+    text-transform: uppercase;
+    margin: 0;
+
+    .featuRed-product__volume {
+      text-transform: uppercase;
+    }
+  }
+
+  &__description {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  &__description-label {
+    font-family: 'Akkurat LL', sans-serif;
+    font-size: 1.4rem;
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  &__description-text {
+    font-family: 'Akkurat LL', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1.35;
+    margin: 0;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.6rem;
+    margin-top: 0.8rem;
+  }
+
+  &__link {
+    flex: 1;
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--Red);
+    font-family: Broadsheet, serif;
+    font-size: 1.8rem;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.7;
+    }
+
+    .icon-arrow {
+      flex-shrink: 0;
+      width: 1.2rem;
+      height: 1.2rem;
+    }
+  }
+
+  &__atc {
+    flex-shrink: 0;
+  }
+
+  &__atc-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4.4rem;
+    height: 4.4rem;
+    border: 1px solid var(--Red);
+    transition: opacity 0.2s;
+
+    &:hover:not(:disabled) {
+      opacity: 0.7;
+    }
+
+    .icon-atc {
+      width: 2rem;
+      height: auto;
+    }
+
+    &.loading {
+      > .loading__spinner {
+        position: static;
+        width: 1.8rem;
+      }
+
+      .icon-atc {
+        opacity: 0;
+      }
+    }
+
+    .path {
+      stroke: var(--Red);
+    }
+  }
+
+  &__media {
+    order: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem var(--gutter) 3.2rem;
+  }
+
+  &__image {
+    display: block;
+    width: 100%;
+    max-width: 28rem;
+    height: auto;
+    object-fit: contain;
+  }
+}

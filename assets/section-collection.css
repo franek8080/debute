@@ -1,0 +1,21 @@
+/* src/styles/sections/collection.scss */
+.collection {
+  background: #ccc;
+}
+.collection__listing-wrapper {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.collection__facets {
+  grid-column: 1/2;
+}
+.collection__products-wrapper {
+  grid-column: 2/-1;
+}
+.collection__products-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-gap: 1rem;
+  gap: 1rem;
+  align-items: stretch;
+}

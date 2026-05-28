@@ -1,0 +1,23 @@
+@use '../global' as *;
+
+.template-captcha {
+
+  .g-recaptcha {
+    margin-bottom: 3rem;
+  }
+
+}
+
+.shopify-challenge {
+
+  &__container {
+    margin: calc(14rem + 5.6rem) auto 14rem;
+  }
+
+  &__message {
+    margin-bottom: 3rem;
+  }
+
+  &__button {}
+
+}

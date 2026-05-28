@@ -1,0 +1,31 @@
+{
+  "name": "debute",
+  "version": "1.0.0",
+  "license": "UNLICENSED",
+  "main": "index.js",
+  "type": "module",
+  "private": true,
+  "store": "b6a6a8-53",
+  "scripts": {
+    "dev": "node esbuild.config.js --watch & shopify theme dev --store $npm_package_store",
+    "watch": "node esbuild.config.js --watch",
+    "build": "node esbuild.config.js",
+    "serve": "shopify theme dev --store $npm_package_store"
+  },
+  "browserslist": [
+    "defaults"
+  ],
+  "dependencies": {
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.5.0",
+    "esbuild": "^0.28.0",
+    "esbuild-sass-plugin": "^3.7.0",
+    "fetch-jsonp": "^1.4.0",
+    "path": "^0.12.7",
+    "postcss": "^8.5.14",
+    "postcss-preset-env": "^11.3.0",
+    "sass": "^1.99.0",
+    "sass-embedded": "^1.99.0"
+  }
+}

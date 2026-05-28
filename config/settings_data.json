@@ -1,0 +1,25 @@
+{
+  "current": "Default",
+  "presets": {
+    "Default": {
+      "page_width": 1200,
+      "social_facebook_link": "https://www.facebook.com/1991market",
+      "social_instagram_link": "https://www.instagram.com/1991market",
+      "social_youtube_link": "https://www.youtube.com/1991market",
+      "social_tiktok_link": "https://www.tiktok.com/1991market",
+      "cart_type": "notification",
+      "sections": {
+        "main-password-header": {
+          "type": "main-password-header",
+          "settings": {
+          }
+        },
+        "main-password-footer": {
+          "type": "main-password-footer",
+          "settings": {
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,134 @@
+@use '../global/mq' as *;
+
+.footer {
+	font-size: 1.4rem;
+	line-height: 110%; /* 1.54rem */
+	text-transform: uppercase;
+
+
+	&__main {
+		gap: 3.2rem 0;
+		background: repeating-linear-gradient(
+			to right,
+			transparent,
+			transparent calc(25% - 0.5px),
+			var(--Beige) calc(25% - 0.5px),
+			var(--Beige) calc(25% + 0.5px),
+			transparent calc(25% + 0.5px),
+			transparent calc(50% - 0.5px),
+			var(--Beige) calc(50% - 0.5px),
+			var(--Beige) calc(50% + 0.5px),
+			transparent calc(50% + 0.5px),
+			transparent calc(75% - 0.5px),
+			var(--Beige) calc(75% - 0.5px),
+			var(--Beige) calc(75% + 0.5px),
+			transparent calc(75% + 0.5px)
+		);
+		@include mq(mb) {
+			gap: 0;
+			padding: 1.6rem var(--gutter) 2.4rem;
+			background: none;
+		}
+	}
+
+	&__column {
+		display: flex;
+		flex-direction: column;
+		gap: 3.2rem;
+		padding: 1.6rem var(--gutter) 2.4rem;
+		@include mq(mb) {
+			padding: 0;
+			gap: 0;
+		}
+		&--1 {}
+		&--2 {}
+		&--3 {}
+		&--text {
+			@include mq(mb) {
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0,1fr));
+				gap: 3.2rem 2rem;
+				margin: 2.4rem 0 0;
+			}
+		}
+	}
+
+	&__block {
+		display: grid;
+		gap: 1.2rem;
+		&--accordion {}
+		&--copyrights {
+			@include mq(mb) {
+				grid-column: 1 / -1;
+				margin-top: 1.6rem;
+			}
+		}
+		&--social_media {
+			@include mq(mb) {
+				grid-row: 1;
+				grid-column: 2 / -1;
+			}
+		}
+
+		&--text {
+			@include mq(mb) {
+				grid-column: 1 / -1;
+			}
+			&:first-child {
+				grid-column: 1 / span 1;
+			}
+		}
+	}
+
+	&__block-summary {
+
+	}
+
+	&__block-title {
+		opacity: .5;
+		&--accordion {
+			margin-bottom: 1.2rem;
+			@include mq(mb) {
+				font-size: 2rem;
+				font-weight: 700;
+				line-height: 120%; /* 2.4rem */
+				letter-spacing: 0.0468rem;
+				opacity: 1;
+				margin: 0;
+			}
+		}
+	}
+
+	&__block-menu {}
+
+	&__block-menu-item {}
+
+	&__block-menu-link {}
+
+	&__copyrights {}
+
+	&__authors {}
+
+	&__policies {
+		border-top: 1px solid var(--Beige);
+	}
+
+	&__policies-menu {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1.2rem;
+		min-height: 4.3rem;
+		align-items: center;
+	}
+
+	&__policy-item {}
+
+	&__policy-link {
+		text-decoration: underline;
+		padding: .8rem 0;
+		@include mq(mb) {
+			font-size: 1.1rem;
+		}
+	}
+
+}
