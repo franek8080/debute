@@ -309,36 +309,6 @@
         }
       }
     },
-    "cart": {
-      "name": "Cart",
-      "settings": {
-        "cart_type": {
-          "label": "Type",
-          "drawer": {
-            "label": "Drawer"
-          },
-          "page": {
-            "label": "Page"
-          },
-          "notification": {
-            "label": "Popup notification"
-          }
-        },
-        "show_vendor": {
-          "label": "Vendor"
-        },
-        "show_cart_note": {
-          "label": "Cart note"
-        },
-        "cart_drawer": {
-          "header": "Cart drawer",
-          "collection": {
-            "label": "Collection",
-            "info": "Shown when cart drawer is empty"
-          }
-        }
-      }
-    },
     "layout": {
       "name": "Layout",
       "settings": {

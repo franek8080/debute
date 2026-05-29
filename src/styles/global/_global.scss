@@ -5,7 +5,7 @@
 }
 
 html, body {
-	background: var(--Off-White);
+	background: var(--White);
 }
 
 html {
@@ -17,12 +17,13 @@ html {
 }
 
 body {
-  color: var(--Red);
+  color: var(--Black);
 
-	font-family: var(--font-regular), sans-serif;
-	font-size: 1.6rem;
-	font-weight: normal;
-	line-height: 1.4;
+  font-family: 'TestAmericanGrotesk', sans-serif;
+
+	font-size: 1.4rem;
+	font-weight: 500;
+	line-height: 1.3;
 	text-align: left;
 
 

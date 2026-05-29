@@ -1,25 +1,28 @@
 {
-  "current": "Default",
-  "presets": {
-    "Default": {
-      "page_width": 1200,
-      "social_facebook_link": "https://www.facebook.com/debute",
-      "social_instagram_link": "https://www.instagram.com/debute",
-      "social_youtube_link": "https://www.youtube.com/debute",
-      "social_tiktok_link": "https://www.tiktok.com/debute",
-      "cart_type": "notification",
-      "sections": {
-        "main-password-header": {
-          "type": "main-password-header",
-          "settings": {
-          }
-        },
-        "main-password-footer": {
-          "type": "main-password-footer",
-          "settings": {
-          }
+  "current": {
+    "page_width": 1200,
+    "logo": "shopify://shop_images/logo_1ad472d4-40ed-48e8-9a9a-85bf95e773b1.svg",
+    "social_facebook_link": "https://www.facebook.com/debute",
+    "social_instagram_link": "https://www.instagram.com/debute",
+    "social_youtube_link": "https://www.youtube.com/debute",
+    "social_tiktok_link": "https://www.tiktok.com/debute",
+    "cart_type": "notification",
+    "sections": {
+      "main-password-header": {
+        "type": "main-password-header",
+        "settings": {
+        }
+      },
+      "main-password-footer": {
+        "type": "main-password-footer",
+        "settings": {
         }
       }
+    }
+  },
+  "presets": {
+    "Default": {
+      "page_width": 1200
     }
   }
 }

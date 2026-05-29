@@ -160,11 +160,6 @@ if (!customElements.get('quick-order-list')) {
             section: 'cart-live-region-text',
             selector: '.shopify-section',
           },
-          {
-            id: 'CartDrawer',
-            selector: '.drawer__inner',
-            section: 'cart-drawer',
-          },
         ];
       }
 
@@ -234,9 +229,6 @@ if (!customElements.get('quick-order-list')) {
 
               this.initVariantEventListeners();
             }
-          } else if (section === 'cart-drawer') {
-            sectionElement.closest('cart-drawer')?.classList.toggle('is-empty', items.length === 0);
-            sectionElement.querySelector(selector).innerHTML = newSection.innerHTML;
           } else {
             sectionElement.innerHTML = newSection.innerHTML;
           }
