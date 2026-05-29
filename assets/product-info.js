@@ -413,6 +413,14 @@ if (!customElements.get('product-info')) {
         return document.querySelector(`product-recommendations[data-section-id^="${relatedProductsSectionId}"]`);
       }
 
+      get quickOrderList() {
+        const quickOrderListSectionId = SectionId.getIdForSection(
+          SectionId.parseId(this.sectionId),
+          'quick_order_list'
+        );
+        return document.querySelector(`quick-order-list[data-id^="${quickOrderListSectionId}"]`);
+      }
+
       get sectionId() {
         return this.dataset.originalSection || this.dataset.section;
       }

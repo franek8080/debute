@@ -246,7 +246,7 @@ class QuantityInput extends HTMLElement {
     event.preventDefault();
     const previousValue = this.input.value;
 
-    if (event.currentTarget.name === 'plus') {
+    if (event.target.name === 'plus') {
       if (parseInt(this.input.dataset.min) > parseInt(this.input.step) && this.input.value == 0) {
         this.input.value = this.input.dataset.min;
       } else {
@@ -258,7 +258,7 @@ class QuantityInput extends HTMLElement {
 
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
 
-    if (this.input.dataset.min === previousValue && event.currentTarget.name === 'minus') {
+    if (this.input.dataset.min === previousValue && event.target.name === 'minus') {
       this.input.value = parseInt(this.input.min);
     }
   }
@@ -555,6 +555,510 @@ class MenuDrawer extends HTMLElement {
 
 customElements.define('menu-drawer', MenuDrawer);
 
+class HeaderDrawer extends MenuDrawer {
+  constructor() {
+    super();
+  }
+
+  openMenuDrawer(summaryElement) {
+    this.header = this.header || document.querySelector('.section-header');
+    this.borderOffset =
+      this.borderOffset || this.closest('.header-wrapper').classList.contains('header-wrapper--border-bottom') ? 1 : 0;
+    document.documentElement.style.setProperty(
+      '--header-bottom-position',
+      `${parseInt(this.header.getBoundingClientRect().bottom - this.borderOffset)}px`
+    );
+    this.header.classList.add('menu-open');
+
+    setTimeout(() => {
+      this.mainDetailsToggle.classList.add('menu-opening');
+    });
+
+    summaryElement.setAttribute('aria-expanded', true);
+    window.addEventListener('resize', this.onResize);
+    trapFocus(this.mainDetailsToggle, summaryElement);
+    document.body.classList.add(`overflow-hidden-${this.dataset.breakpoint}`);
+  }
+
+  closeMenuDrawer(event, elementToFocus) {
+    if (!elementToFocus) return;
+    super.closeMenuDrawer(event, elementToFocus);
+    this.header.classList.remove('menu-open');
+    window.removeEventListener('resize', this.onResize);
+  }
+
+  onResize = () => {
+    this.header &&
+      document.documentElement.style.setProperty(
+        '--header-bottom-position',
+        `${parseInt(this.header.getBoundingClientRect().bottom - this.borderOffset)}px`
+      );
+    document.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
+  };
+}
+
+customElements.define('header-drawer', HeaderDrawer);
+
+class ModalDialog extends HTMLElement {
+  constructor() {
+    super();
+    this.querySelector('[id^="ModalClose-"]').addEventListener('click', this.hide.bind(this, false));
+    this.addEventListener('keyup', (event) => {
+      if (event.code.toUpperCase() === 'ESCAPE') this.hide();
+    });
+    if (this.classList.contains('media-modal')) {
+      this.addEventListener('pointerup', (event) => {
+        if (event.pointerType === 'mouse' && !event.target.closest('deferred-media, product-model')) this.hide();
+      });
+    } else {
+      this.addEventListener('click', (event) => {
+        if (event.target === this) this.hide();
+      });
+    }
+  }
+
+  connectedCallback() {
+    if (this.moved) return;
+    this.moved = true;
+    this.dataset.section = this.closest('.shopify-section').id.replace('shopify-section-', '');
+    document.body.appendChild(this);
+  }
+
+  show(opener) {
+    this.openedBy = opener;
+    const popup = this.querySelector('.template-popup');
+    document.body.classList.add('overflow-hidden');
+    this.setAttribute('open', '');
+    if (popup) popup.loadContent();
+    trapFocus(this, this.querySelector('[role="dialog"]'));
+    window.pauseAllMedia();
+  }
+
+  hide() {
+    document.body.classList.remove('overflow-hidden');
+    document.body.dispatchEvent(new CustomEvent('modalClosed'));
+    this.removeAttribute('open');
+    removeTrapFocus(this.openedBy);
+    window.pauseAllMedia();
+  }
+}
+customElements.define('modal-dialog', ModalDialog);
+
+class BulkModal extends HTMLElement {
+  constructor() {
+    super();
+  }
+
+  connectedCallback() {
+    const handleIntersection = (entries, observer) => {
+      if (!entries[0].isIntersecting) return;
+      observer.unobserve(this);
+      if (this.innerHTML.trim() === '') {
+        const productUrl = this.dataset.url.split('?')[0];
+        fetch(`${productUrl}?section_id=bulk-quick-order-list`)
+          .then((response) => response.text())
+          .then((responseText) => {
+            const html = new DOMParser().parseFromString(responseText, 'text/html');
+            const sourceQty = html.querySelector('.quick-order-list-container').parentNode;
+            this.innerHTML = sourceQty.innerHTML;
+          })
+          .catch((e) => {
+            console.error(e);
+          });
+      }
+    };
+
+    new IntersectionObserver(handleIntersection.bind(this)).observe(
+      document.querySelector(`#QuickBulk-${this.dataset.productId}-${this.dataset.sectionId}`)
+    );
+  }
+}
+
+customElements.define('bulk-modal', BulkModal);
+
+class ModalOpener extends HTMLElement {
+  constructor() {
+    super();
+
+    const button = this.querySelector('button');
+
+    if (!button) return;
+    button.addEventListener('click', () => {
+      const modal = document.querySelector(this.getAttribute('data-modal'));
+      if (modal) modal.show(button);
+    });
+  }
+}
+customElements.define('modal-opener', ModalOpener);
+
+class DeferredMedia extends HTMLElement {
+  constructor() {
+    super();
+    const poster = this.querySelector('[id^="Deferred-Poster-"]');
+    if (!poster) return;
+    poster.addEventListener('click', this.loadContent.bind(this));
+  }
+
+  loadContent(focus = true) {
+    window.pauseAllMedia();
+    if (!this.getAttribute('loaded')) {
+      const content = document.createElement('div');
+      content.appendChild(this.querySelector('template').content.firstElementChild.cloneNode(true));
+
+      this.setAttribute('loaded', true);
+      const deferredElement = this.appendChild(content.querySelector('video, model-viewer, iframe'));
+      if (focus) deferredElement.focus();
+      if (deferredElement.nodeName == 'VIDEO' && deferredElement.getAttribute('autoplay')) {
+        // force autoplay for safari
+        deferredElement.play();
+      }
+
+      // Workaround for safari iframe bug
+      const formerStyle = deferredElement.getAttribute('style');
+      deferredElement.setAttribute('style', 'display: block;');
+      window.setTimeout(() => {
+        deferredElement.setAttribute('style', formerStyle);
+      }, 0);
+    }
+  }
+}
+
+customElements.define('deferred-media', DeferredMedia);
+
+class SliderComponent extends HTMLElement {
+  constructor() {
+    super();
+    this.slider = this.querySelector('[id^="Slider-"]');
+    this.sliderItems = this.querySelectorAll('[id^="Slide-"]');
+    this.enableSliderLooping = false;
+    this.currentPageElement = this.querySelector('.slider-counter--current');
+    this.pageTotalElement = this.querySelector('.slider-counter--total');
+    this.prevButton = this.querySelector('button[name="previous"]');
+    this.nextButton = this.querySelector('button[name="next"]');
+
+    if (!this.slider || !this.nextButton) return;
+
+    this.initPages();
+    const resizeObserver = new ResizeObserver((entries) => this.initPages());
+    resizeObserver.observe(this.slider);
+
+    this.slider.addEventListener('scroll', this.update.bind(this));
+    this.prevButton.addEventListener('click', this.onButtonClick.bind(this));
+    this.nextButton.addEventListener('click', this.onButtonClick.bind(this));
+  }
+
+  initPages() {
+    this.sliderItemsToShow = Array.from(this.sliderItems).filter((element) => element.clientWidth > 0);
+    if (this.sliderItemsToShow.length < 2) return;
+    this.sliderItemOffset = this.sliderItemsToShow[1].offsetLeft - this.sliderItemsToShow[0].offsetLeft;
+    this.slidesPerPage = Math.floor(
+      (this.slider.clientWidth - this.sliderItemsToShow[0].offsetLeft) / this.sliderItemOffset
+    );
+    this.totalPages = this.sliderItemsToShow.length - this.slidesPerPage + 1;
+    this.update();
+  }
+
+  resetPages() {
+    this.sliderItems = this.querySelectorAll('[id^="Slide-"]');
+    this.initPages();
+  }
+
+  update() {
+    // Temporarily prevents unneeded updates resulting from variant changes
+    // This should be refactored as part of https://github.com/Shopify/dawn/issues/2057
+    if (!this.slider || !this.nextButton) return;
+
+    const previousPage = this.currentPage;
+    this.currentPage = Math.round(this.slider.scrollLeft / this.sliderItemOffset) + 1;
+
+    if (this.currentPageElement && this.pageTotalElement) {
+      this.currentPageElement.textContent = this.currentPage;
+      this.pageTotalElement.textContent = this.totalPages;
+    }
+
+    if (this.currentPage != previousPage) {
+      this.dispatchEvent(
+        new CustomEvent('slideChanged', {
+          detail: {
+            currentPage: this.currentPage,
+            currentElement: this.sliderItemsToShow[this.currentPage - 1],
+          },
+        })
+      );
+    }
+
+    if (this.enableSliderLooping) return;
+
+    if (this.isSlideVisible(this.sliderItemsToShow[0]) && this.slider.scrollLeft === 0) {
+      this.prevButton.setAttribute('disabled', 'disabled');
+    } else {
+      this.prevButton.removeAttribute('disabled');
+    }
+
+    if (this.isSlideVisible(this.sliderItemsToShow[this.sliderItemsToShow.length - 1])) {
+      this.nextButton.setAttribute('disabled', 'disabled');
+    } else {
+      this.nextButton.removeAttribute('disabled');
+    }
+  }
+
+  isSlideVisible(element, offset = 0) {
+    const lastVisibleSlide = this.slider.clientWidth + this.slider.scrollLeft - offset;
+    return element.offsetLeft + element.clientWidth <= lastVisibleSlide && element.offsetLeft >= this.slider.scrollLeft;
+  }
+
+  onButtonClick(event) {
+    event.preventDefault();
+    const step = event.currentTarget.dataset.step || 1;
+    this.slideScrollPosition =
+      event.currentTarget.name === 'next'
+        ? this.slider.scrollLeft + step * this.sliderItemOffset
+        : this.slider.scrollLeft - step * this.sliderItemOffset;
+    this.setSlidePosition(this.slideScrollPosition);
+  }
+
+  setSlidePosition(position) {
+    this.slider.scrollTo({
+      left: position,
+    });
+  }
+}
+
+customElements.define('slider-component', SliderComponent);
+
+class SlideshowComponent extends SliderComponent {
+  constructor() {
+    super();
+    this.sliderControlWrapper = this.querySelector('.slider-buttons');
+    this.enableSliderLooping = true;
+
+    if (!this.sliderControlWrapper) return;
+
+    this.sliderFirstItemNode = this.slider.querySelector('.slideshow__slide');
+    if (this.sliderItemsToShow.length > 0) this.currentPage = 1;
+
+    this.announcementBarSlider = this.querySelector('.announcement-bar-slider');
+    // Value below should match --duration-announcement-bar CSS value
+    this.announcerBarAnimationDelay = this.announcementBarSlider ? 250 : 0;
+
+    this.sliderControlLinksArray = Array.from(this.sliderControlWrapper.querySelectorAll('.slider-counter__link'));
+    this.sliderControlLinksArray.forEach((link) => link.addEventListener('click', this.linkToSlide.bind(this)));
+    this.slider.addEventListener('scroll', this.setSlideVisibility.bind(this));
+    this.setSlideVisibility();
+
+    if (this.announcementBarSlider) {
+      this.announcementBarArrowButtonWasClicked = false;
+
+      this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      this.reducedMotion.addEventListener('change', () => {
+        if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
+      });
+
+      [this.prevButton, this.nextButton].forEach((button) => {
+        button.addEventListener(
+          'click',
+          () => {
+            this.announcementBarArrowButtonWasClicked = true;
+          },
+          { once: true }
+        );
+      });
+    }
+
+    if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
+  }
+
+  setAutoPlay() {
+    this.autoplaySpeed = this.slider.dataset.speed * 1000;
+    this.addEventListener('mouseover', this.focusInHandling.bind(this));
+    this.addEventListener('mouseleave', this.focusOutHandling.bind(this));
+    this.addEventListener('focusin', this.focusInHandling.bind(this));
+    this.addEventListener('focusout', this.focusOutHandling.bind(this));
+
+    if (this.querySelector('.slideshow__autoplay')) {
+      this.sliderAutoplayButton = this.querySelector('.slideshow__autoplay');
+      this.sliderAutoplayButton.addEventListener('click', this.autoPlayToggle.bind(this));
+      this.autoplayButtonIsSetToPlay = true;
+      this.play();
+    } else {
+      this.reducedMotion.matches || this.announcementBarArrowButtonWasClicked ? this.pause() : this.play();
+    }
+  }
+
+  onButtonClick(event) {
+    super.onButtonClick(event);
+    this.wasClicked = true;
+
+    const isFirstSlide = this.currentPage === 1;
+    const isLastSlide = this.currentPage === this.sliderItemsToShow.length;
+
+    if (!isFirstSlide && !isLastSlide) {
+      this.applyAnimationToAnnouncementBar(event.currentTarget.name);
+      return;
+    }
+
+    if (isFirstSlide && event.currentTarget.name === 'previous') {
+      this.slideScrollPosition =
+        this.slider.scrollLeft + this.sliderFirstItemNode.clientWidth * this.sliderItemsToShow.length;
+    } else if (isLastSlide && event.currentTarget.name === 'next') {
+      this.slideScrollPosition = 0;
+    }
+
+    this.setSlidePosition(this.slideScrollPosition);
+
+    this.applyAnimationToAnnouncementBar(event.currentTarget.name);
+  }
+
+  setSlidePosition(position) {
+    if (this.setPositionTimeout) clearTimeout(this.setPositionTimeout);
+    this.setPositionTimeout = setTimeout(() => {
+      this.slider.scrollTo({
+        left: position,
+      });
+    }, this.announcerBarAnimationDelay);
+  }
+
+  update() {
+    super.update();
+    this.sliderControlButtons = this.querySelectorAll('.slider-counter__link');
+    this.prevButton.removeAttribute('disabled');
+
+    if (!this.sliderControlButtons.length) return;
+
+    this.sliderControlButtons.forEach((link) => {
+      link.classList.remove('slider-counter__link--active');
+      link.removeAttribute('aria-current');
+    });
+    this.sliderControlButtons[this.currentPage - 1].classList.add('slider-counter__link--active');
+    this.sliderControlButtons[this.currentPage - 1].setAttribute('aria-current', true);
+  }
+
+  autoPlayToggle() {
+    this.togglePlayButtonState(this.autoplayButtonIsSetToPlay);
+    this.autoplayButtonIsSetToPlay ? this.pause() : this.play();
+    this.autoplayButtonIsSetToPlay = !this.autoplayButtonIsSetToPlay;
+  }
+
+  focusOutHandling(event) {
+    if (this.sliderAutoplayButton) {
+      const focusedOnAutoplayButton =
+        event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
+      if (!this.autoplayButtonIsSetToPlay || focusedOnAutoplayButton) return;
+      this.play();
+    } else if (!this.reducedMotion.matches && !this.announcementBarArrowButtonWasClicked) {
+      this.play();
+    }
+  }
+
+  focusInHandling(event) {
+    if (this.sliderAutoplayButton) {
+      const focusedOnAutoplayButton =
+        event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
+      if (focusedOnAutoplayButton && this.autoplayButtonIsSetToPlay) {
+        this.play();
+      } else if (this.autoplayButtonIsSetToPlay) {
+        this.pause();
+      }
+    } else if (this.announcementBarSlider.contains(event.target)) {
+      this.pause();
+    }
+  }
+
+  play() {
+    this.slider.setAttribute('aria-live', 'off');
+    clearInterval(this.autoplay);
+    this.autoplay = setInterval(this.autoRotateSlides.bind(this), this.autoplaySpeed);
+  }
+
+  pause() {
+    this.slider.setAttribute('aria-live', 'polite');
+    clearInterval(this.autoplay);
+  }
+
+  togglePlayButtonState(pauseAutoplay) {
+    if (pauseAutoplay) {
+      this.sliderAutoplayButton.classList.add('slideshow__autoplay--paused');
+      this.sliderAutoplayButton.setAttribute('aria-label', window.accessibilityStrings.playSlideshow);
+    } else {
+      this.sliderAutoplayButton.classList.remove('slideshow__autoplay--paused');
+      this.sliderAutoplayButton.setAttribute('aria-label', window.accessibilityStrings.pauseSlideshow);
+    }
+  }
+
+  autoRotateSlides() {
+    const slideScrollPosition =
+      this.currentPage === this.sliderItems.length ? 0 : this.slider.scrollLeft + this.sliderItemOffset;
+
+    this.setSlidePosition(slideScrollPosition);
+    this.applyAnimationToAnnouncementBar();
+  }
+
+  setSlideVisibility(event) {
+    this.sliderItemsToShow.forEach((item, index) => {
+      const linkElements = item.querySelectorAll('a');
+      if (index === this.currentPage - 1) {
+        if (linkElements.length)
+          linkElements.forEach((button) => {
+            button.removeAttribute('tabindex');
+          });
+        item.setAttribute('aria-hidden', 'false');
+        item.removeAttribute('tabindex');
+      } else {
+        if (linkElements.length)
+          linkElements.forEach((button) => {
+            button.setAttribute('tabindex', '-1');
+          });
+        item.setAttribute('aria-hidden', 'true');
+        item.setAttribute('tabindex', '-1');
+      }
+    });
+    this.wasClicked = false;
+  }
+
+  applyAnimationToAnnouncementBar(button = 'next') {
+    if (!this.announcementBarSlider) return;
+
+    const itemsCount = this.sliderItems.length;
+    const increment = button === 'next' ? 1 : -1;
+
+    const currentIndex = this.currentPage - 1;
+    let nextIndex = (currentIndex + increment) % itemsCount;
+    nextIndex = nextIndex === -1 ? itemsCount - 1 : nextIndex;
+
+    const nextSlide = this.sliderItems[nextIndex];
+    const currentSlide = this.sliderItems[currentIndex];
+
+    const animationClassIn = 'announcement-bar-slider--fade-in';
+    const animationClassOut = 'announcement-bar-slider--fade-out';
+
+    const isFirstSlide = currentIndex === 0;
+    const isLastSlide = currentIndex === itemsCount - 1;
+
+    const shouldMoveNext = (button === 'next' && !isLastSlide) || (button === 'previous' && isFirstSlide);
+    const direction = shouldMoveNext ? 'next' : 'previous';
+
+    currentSlide.classList.add(`${animationClassOut}-${direction}`);
+    nextSlide.classList.add(`${animationClassIn}-${direction}`);
+
+    setTimeout(() => {
+      currentSlide.classList.remove(`${animationClassOut}-${direction}`);
+      nextSlide.classList.remove(`${animationClassIn}-${direction}`);
+    }, this.announcerBarAnimationDelay * 2);
+  }
+
+  linkToSlide(event) {
+    event.preventDefault();
+    const slideScrollPosition =
+      this.slider.scrollLeft +
+      this.sliderFirstItemNode.clientWidth *
+        (this.sliderControlLinksArray.indexOf(event.currentTarget) + 1 - this.currentPage);
+    this.slider.scrollTo({
+      left: slideScrollPosition,
+    });
+  }
+}
+
+customElements.define('slideshow-component', SlideshowComponent);
 
 class VariantSelects extends HTMLElement {
   constructor() {
@@ -673,6 +1177,109 @@ class ProductRecommendations extends HTMLElement {
 
 customElements.define('product-recommendations', ProductRecommendations);
 
+class AccountIcon extends HTMLElement {
+  constructor() {
+    super();
+
+    this.icon = this.querySelector('.icon');
+  }
+
+  connectedCallback() {
+    document.addEventListener('storefront:signincompleted', this.handleStorefrontSignInCompleted.bind(this));
+  }
+
+  handleStorefrontSignInCompleted(event) {
+    if (event?.detail?.avatar) {
+      this.icon?.replaceWith(event.detail.avatar.cloneNode());
+    }
+  }
+}
+
+customElements.define('account-icon', AccountIcon);
+
+class BulkAdd extends HTMLElement {
+  static ASYNC_REQUEST_DELAY = 250;
+
+  constructor() {
+    super();
+    this.queue = [];
+    this.setRequestStarted(false);
+    this.ids = [];
+  }
+
+  startQueue(id, quantity) {
+    this.queue.push({ id, quantity });
+
+    const interval = setInterval(() => {
+      if (this.queue.length > 0) {
+        if (!this.requestStarted) {
+          this.sendRequest(this.queue);
+        }
+      } else {
+        clearInterval(interval);
+      }
+    }, BulkAdd.ASYNC_REQUEST_DELAY);
+  }
+
+  sendRequest(queue) {
+    this.setRequestStarted(true);
+    const items = {};
+
+    queue.forEach((queueItem) => {
+      items[parseInt(queueItem.id)] = queueItem.quantity;
+    });
+    this.queue = this.queue.filter((queueElement) => !queue.includes(queueElement));
+
+    this.updateMultipleQty(items);
+  }
+
+  setRequestStarted(requestStarted) {
+    this._requestStarted = requestStarted;
+  }
+
+  get requestStarted() {
+    return this._requestStarted;
+  }
+
+  resetQuantityInput(id) {
+    const input = this.querySelector(`#Quantity-${id}`);
+    input.value = input.getAttribute('value');
+    this.isEnterPressed = false;
+  }
+
+  setValidity(event, index, message) {
+    event.target.setCustomValidity(message);
+    event.target.reportValidity();
+    this.resetQuantityInput(index);
+    event.target.select();
+  }
+
+  validateQuantity(event) {
+    const inputValue = parseInt(event.target.value);
+    const index = event.target.dataset.index;
+
+    if (inputValue < event.target.dataset.min) {
+      this.setValidity(event, index, window.quickOrderListStrings.min_error.replace('[min]', event.target.dataset.min));
+    } else if (inputValue > parseInt(event.target.max)) {
+      this.setValidity(event, index, window.quickOrderListStrings.max_error.replace('[max]', event.target.max));
+    } else if (inputValue % parseInt(event.target.step) != 0) {
+      this.setValidity(event, index, window.quickOrderListStrings.step_error.replace('[step]', event.target.step));
+    } else {
+      event.target.setCustomValidity('');
+      event.target.reportValidity();
+      event.target.setAttribute('value', inputValue);
+      this.startQueue(index, inputValue);
+    }
+  }
+
+  getSectionInnerHTML(html, selector) {
+    return new DOMParser().parseFromString(html, 'text/html').querySelector(selector).innerHTML;
+  }
+}
+
+if (!customElements.get('bulk-add')) {
+  customElements.define('bulk-add', BulkAdd);
+}
 
 class CartPerformance {
   static #metric_prefix = "cart-performance"
@@ -723,235 +1330,3 @@ class CartPerformance {
     );
   }
 }
-
-
-class SplideSlider extends HTMLElement {
-  constructor() {
-    super()
-
-    this.splide = new Splide(this)
-    this.splide.mount( window.splide.Extensions )
-
-    // this.splide.on('mounted')
-
-    // if(document.body.classList.contains('template-product')) {
-
-    //   if(window.matchMedia('(max-width: 800px)').matches) {
-    //     this.splide.remove('[data-hide-on-breakpoint="pdp"]')
-    //   }
-
-    // }
-
-  }
-}
-customElements.define('splide-slider', SplideSlider)
-
-
-
-class Accordion {
-  constructor(el) {
-
-    // Store the <details> element
-    this.el = el;
-    // Store the <summary> element
-    this.summary = el.querySelector('summary');
-    // Store the <div class="content"> element
-    this.content = el.querySelector('[data-content]');
-    this.el.classList.remove('destroyed');
-
-    if (this.el.hasAttribute('data-destroy')) {
-      if(window.matchMedia(this.el.dataset.destroy).matches) {
-        this.el.open = true
-        this.el.classList.add('destroyed')
-        return
-      }
-    }
-
-    // Store the animation object (so we can cancel it if needed)
-    this.animation = null;
-    // Store if the element is closing
-    this.isClosing = false;
-    // Store if the element is expanding
-    this.isExpanding = false;
-    // Keep bound handler reference for proper teardown
-    this.onSummaryClick = (e) => this.onClick(e);
-    // Detect user clicks on the summary element
-    this.summary.addEventListener('click', this.onSummaryClick);
-  }
-
-  onClick(e) {
-    // Stop default behaviour from the browser
-    e.preventDefault();
-    // Add an overflow on the <details> to avoid content overflowing
-    this.el.style.overflow = 'hidden';
-    // Check if the element is being closed or is already closed
-    if (this.isClosing || !this.el.open) {
-      this.open();
-    // Check if the element is being openned or is already open
-    } else if (this.isExpanding || this.el.open) {
-      this.shrink();
-    }
-  }
-
-  shrink() {
-    // Set the element as "being closed"
-    this.isClosing = true;
-
-    this.el.classList.add('closing')
-
-    // Store the current height of the element
-    const startHeight = `${this.el.offsetHeight}px`;
-    // Calculate the height of the summary
-    const endHeight = `${this.summary.offsetHeight}px`;
-
-    // If there is already an animation running
-    if (this.animation) {
-      // Cancel the current animation
-      this.animation.cancel();
-    }
-
-    // Start a WAAPI animation
-    this.animation = this.el.animate({
-      // Set the keyframes from the startHeight to endHeight
-      height: [startHeight, endHeight]
-    }, {
-      duration: 400,
-      easing: 'ease-out'
-    });
-
-
-    // When the animation is complete, call onAnimationFinish()
-    this.animation.onfinish = () => this.onAnimationFinish(false);
-    // If the animation is cancelled, isClosing variable is set to false
-    this.animation.oncancel = () => {
-      this.isClosing = false;
-      this.el.classList.remove('closing')
-    }
-  }
-
-  open() {
-    // Apply a fixed height on the element
-    this.el.style.height = `${this.el.offsetHeight}px`;
-    // Force the [open] attribute on the details element
-    this.el.open = true;
-    this.el.setAttribute('open', '');
-    // Wait for the next frame to call the expand function
-    window.requestAnimationFrame(() => this.expand());
-  }
-
-  expand() {
-    // Set the element as "being expanding"
-    this.isExpanding = true;
-    // Get the current fixed height of the element
-    const startHeight = `${this.el.offsetHeight}px`;
-    // Calculate the open height of the element (summary height + content height)
-    const endHeight = `${this.summary.offsetHeight + this.content.offsetHeight}px`;
-
-    // If there is already an animation running
-    if (this.animation) {
-      // Cancel the current animation
-      this.animation.cancel();
-    }
-
-    // Start a WAAPI animation
-    this.animation = this.el.animate({
-      // Set the keyframes from the startHeight to endHeight
-      height: [startHeight, endHeight]
-    }, {
-      duration: 400,
-      easing: 'ease-out'
-    });
-    // When the animation is complete, call onAnimationFinish()
-    this.animation.onfinish = () => this.onAnimationFinish(true);
-    // If the animation is cancelled, isExpanding variable is set to false
-    this.animation.oncancel = () => this.isExpanding = false;
-  }
-
-  onAnimationFinish(open) {
-    // Set the open attribute based on the parameter
-    this.el.open = open;
-    // Clear the stored animation
-    this.animation = null;
-    // Reset isClosing & isExpanding
-    this.isClosing = false;
-    this.el.classList.remove('closing')
-    this.isExpanding = false;
-    // Remove the overflow hidden and the fixed height
-    this.el.style.height = this.el.style.overflow = '';
-  }
-
-  destroy() {
-    if (this.animation) {
-      this.animation.cancel();
-      this.animation = null;
-    }
-
-    if (this.summary && this.onSummaryClick) {
-      this.summary.removeEventListener('click', this.onSummaryClick);
-    }
-
-    this.el.open = true;
-    this.el.classList.remove('closing');
-    this.el.classList.add('destroyed');
-    this.el.style.height = '';
-    this.el.style.overflow = '';
-    this.isClosing = false;
-    this.isExpanding = false;
-  }
-}
-
-// initialize the accordions
-(function() {
-  if (typeof Accordion === 'undefined') return;
-
-  const accordionInstances = new Map();
-
-  const createAccordion = (detailsEl) => {
-    if (accordionInstances.has(detailsEl)) return;
-    accordionInstances.set(detailsEl, new Accordion(detailsEl));
-  };
-
-  const destroyAccordion = (detailsEl) => {
-    const instance = accordionInstances.get(detailsEl);
-    if (instance) {
-      instance.destroy();
-      console.log(instance);
-    } else {
-      detailsEl.open = true;
-      detailsEl.setAttribute('open', '');
-      detailsEl.classList.remove('closing');
-      detailsEl.classList.add('destroyed');
-      detailsEl.style.height = '';
-      detailsEl.style.overflow = '';
-    }
-    accordionInstances.delete(detailsEl);
-  };
-
-  const syncAccordions = () => {
-    document.querySelectorAll('details[data-accordion]').forEach((el) => {
-      const destroyQuery = el.dataset.accordionDestroy;
-      const shouldDestroy = destroyQuery ? window.matchMedia(destroyQuery).matches : false;
-
-      if (shouldDestroy) {
-        destroyAccordion(el);
-        return;
-      }
-
-      createAccordion(el);
-    });
-
-    accordionInstances.forEach((_, el) => {
-      if (!document.body.contains(el)) {
-        accordionInstances.delete(el);
-      }
-    });
-  };
-
-  if (!window.__globalAccordionBindings) {
-    window.addEventListener('resize', syncAccordions);
-    document.addEventListener('shopify:section:load', syncAccordions);
-    window.__globalAccordionBindings = true;
-  }
-
-  syncAccordions();
-})();

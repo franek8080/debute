@@ -9,33 +9,8 @@
  */
 {
   "sections": {
-    "hero": {
-      "type": "hero",
-      "settings": {
-      }
-    },
-    "featured_product": {
-      "type": "featured-product",
-      "settings": {
-        "product": "zen-candle"
-      }
-    },
-    "ticker": {
-      "type": "ticker",
-      "settings": {
-      }
-    },
-    "ticker2": {
-      "type": "ticker",
-      "settings": {
-      }
-    }
     
   },
   "order": [
-    "hero",
-    "featured_product",
-    "ticker", 
-    "ticker2"
   ]
 }
